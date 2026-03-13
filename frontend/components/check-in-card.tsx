@@ -42,13 +42,49 @@ export function CheckInCard() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedMood) return;
-    setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-  };
+  e.preventDefault();
+  if (!selectedMood || !token) return;
+  setIsSubmitting(true);
+  try {
+    await fetch("http://localhost:5000/api/checkin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tokenId: token,
+        mood: selectedMood,
+        sleep,
+        stress,
+        note: notes,        // ← was "note" (undefined), should be "notes"
+        department: "General",
+      }),
+    });
+  } catch (err) {
+    console.error("Failed to submit:", err);
+  }
+  setIsSubmitting(false);
+  setIsSubmitted(true);
+};
+
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!selectedMood) return;
+  //   setIsSubmitting(true);
+  //   // await new Promise(resolve => setTimeout(resolve, 1000));
+  //   await fetch("http://localhost:5000/api/checkin", {
+  // method: "POST",
+  // headers: { "Content-Type": "application/json" },
+  // body: JSON.stringify({
+  //   tokenId: token,
+  //   mood: selectedMood,
+  //   sleep,
+  //   stress,
+  //   note,
+  //   department: "General",
+  // }),
+// });
+//     setIsSubmitting(false);
+//     setIsSubmitted(true);
+//   };
 
   if (isSubmitted) {
     return (
