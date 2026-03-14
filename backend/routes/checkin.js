@@ -51,17 +51,22 @@ async function detectAndSaveRisk(tokenId, department) {
 // ── POST /api/checkin ─────────────────────────────────────────────
 router.post("/", async (req, res) => {
   try {
+    console.log("Received body:", req.body);
+
     const { tokenId, mood, sleep, stress, note, department, year } = req.body;
 
     if (!tokenId || !mood || sleep === undefined || stress === undefined) {
-      return res.status(400).json({ error: "tokenId, mood, sleep, and stress are required" });
+      return res.status(400).json({
+        error: "Missing required fields",
+        received: { tokenId, mood, sleep, stress },
+      });
     }
 
     const checkin = await Checkin.create({
       tokenId,
-      mood,
-      sleep,
-      stress,
+      mood: Number(mood),
+      sleep: Number(sleep),
+      stress: Number(stress),
       note: note || "",
       department: department || "General",
       year: year || 1,
@@ -75,8 +80,8 @@ router.post("/", async (req, res) => {
       checkin,
     });
   } catch (err) {
-    console.error("Checkin error:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error("Checkin error:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
