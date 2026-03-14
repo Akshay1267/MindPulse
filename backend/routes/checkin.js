@@ -53,9 +53,14 @@ router.post("/", async (req, res) => {
   try {
     console.log("Received body:", req.body);
 
-    const { tokenId, mood, sleep, stress, note, department, year } = req.body;
+    const { tokenId, mood, sleep, stress, note, department, year } = req.body || {};
 
-    if (!tokenId || !mood || sleep === undefined || stress === undefined) {
+    if (
+      !tokenId ||
+      mood === undefined ||
+      sleep === undefined ||
+      stress === undefined
+    ) {
       return res.status(400).json({
         error: "Missing required fields",
         received: { tokenId, mood, sleep, stress },

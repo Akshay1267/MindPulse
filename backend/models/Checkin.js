@@ -19,11 +19,11 @@ const CheckinSchema = new mongoose.Schema({
     max: 12,
   },
   stress: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 10,
-  },
+  type: Number,
+  required: true,
+  min: 0,  
+  max: 10,
+},
   note: {
     type: String,
     default: "",
@@ -44,3 +44,4 @@ const CheckinSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model("Checkin", CheckinSchema);
+
