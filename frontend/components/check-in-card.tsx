@@ -46,7 +46,7 @@ export function CheckInCard() {
   if (!selectedMood || !token) return;
   setIsSubmitting(true);
   try {
-    await fetch("http://localhost:5000/api/checkin", {
+      await fetch("https://mindpulse-a403.onrender.com/api/checkin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -54,7 +54,7 @@ export function CheckInCard() {
         mood: selectedMood,
         sleep,
         stress,
-        note: notes,        // ← was "note" (undefined), should be "notes"
+        note: notes,        
         department: "General",
       }),
     });
@@ -64,27 +64,6 @@ export function CheckInCard() {
   setIsSubmitting(false);
   setIsSubmitted(true);
 };
-
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!selectedMood) return;
-  //   setIsSubmitting(true);
-  //   // await new Promise(resolve => setTimeout(resolve, 1000));
-  //   await fetch("http://localhost:5000/api/checkin", {
-  // method: "POST",
-  // headers: { "Content-Type": "application/json" },
-  // body: JSON.stringify({
-  //   tokenId: token,
-  //   mood: selectedMood,
-  //   sleep,
-  //   stress,
-  //   note,
-  //   department: "General",
-  // }),
-// });
-//     setIsSubmitting(false);
-//     setIsSubmitted(true);
-//   };
 
   if (isSubmitted) {
     return (

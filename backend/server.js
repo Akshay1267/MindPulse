@@ -5,15 +5,15 @@ require("dotenv").config();
 
 const app = express();
 
-// ── Middleware ────────────────────────────────────────────────────
+// ── Middleware ────────
 app.use(cors({
   origin: [
     "http://localhost:3000",
+    "https://mind-pulse-iota.vercel.app",
     "https://v0-mind-pulse-web-app.vercel.app",
   ],
   credentials: true,
 }));
-app.use(express.json());
 
 // ── Routes ────────────────────────────────────────────────────────
 app.use("/api/checkin", require("./routes/checkin"));
