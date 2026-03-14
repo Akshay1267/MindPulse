@@ -43,7 +43,7 @@ export function Navbar() {
 
         {/* Counsellor Login Button */}
         <Link
-          href="/dashboard"
+          href="/login"
           className="relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-lg group"
           style={{
             background: "linear-gradient(#0F1729, #0F1729) padding-box, linear-gradient(135deg, #6C63FF, #00D4AA) border-box",
