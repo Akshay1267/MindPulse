@@ -1,22 +1,21 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const app = express();
 
-// ── Middleware ────────
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
+// ── Middleware ────────────────────────────────────────────────────
 app.use(cors({
   origin: [
     "http://localhost:3000",
     "https://mind-pulse-iota.vercel.app",
-    "https://v0-mind-pulse-web-app.vercel.app",
   ],
-  credentials: true,
+  credentials: true, // ← required for cookies
 }));
+app.use(express.json());
+app.use(cookieParser());
 
 // ── Routes ────────────────────────────────────────────────────────
 app.use("/api/checkin", require("./routes/checkin"));
@@ -27,14 +26,6 @@ app.get("/", (req, res) => {
   res.json({
     status: "MindPulse API is running 🧠",
     version: "1.0.0",
-    endpoints: [
-      "POST /api/checkin",
-      "GET  /api/checkin/history/:tokenId",
-      "GET  /api/dashboard",
-      "POST /api/dashboard/resolve/:alertId",
-      "POST /api/dashboard/message",
-      "GET  /api/dashboard/analytics",
-    ],
   });
 });
 
