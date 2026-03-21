@@ -1,6 +1,6 @@
 # 🧠 MindPulse — Student Mental Health Early Warning System
 
-> **Hack Energy 2.0** | HackGyanVerse Community | Healthcare Track
+> **Hack Energy 2.0** | HackGyanVerse Community | Healthcare Track  
 > Team NextHope | MCA Students
 
 ![MindPulse Banner](https://mind-pulse-iota.vercel.app/icon.svg)
@@ -48,8 +48,10 @@ MindPulse is a **daily anonymous mood check-in platform** that uses AI-driven pa
 - Daily 10-second mood check-in (mood, sleep, stress, optional note)
 - Access curated self-help resources
 - Receive anonymous support messages from counsellors
+- View personal mood history using token
 
 ### For Counsellors
+- Secure login portal
 - Real-time dashboard with campus mood trends
 - Active alerts showing at-risk students (HIGH / MEDIUM severity)
 - Send anonymous support messages to flagged students
@@ -61,6 +63,105 @@ MindPulse is a **daily anonymous mood check-in platform** that uses AI-driven pa
 - Weekly stress heatmap
 - Mood vs attendance correlation chart
 - AI-generated actionable insights
+
+---
+
+## 🔄 Workflow
+
+### 👤 Student Flow
+```
+1. Visit app → Click "Generate" → Get anonymous token (e.g. MP-8821-X)
+2. Save token safely → Fill daily check-in (mood, sleep, stress) → Submit
+3. See success screen "You're seen. You're heard 💚"
+4. Every day → enter saved token → submit new check-in (10 seconds)
+5. Go to /resources → enter token → see 7-day mood chart + counsellor messages
+```
+
+### ⚙️ Automatic AI Detection (Backend)
+```
+Every check-in submission triggers automatically:
+      ↓
+Fetch last 7 check-ins for that token from MongoDB
+      ↓
+Calculate avg mood, avg stress, avg sleep
+Check consecutive low mood days
+      ↓
+IF avg mood < 2.0 OR 3+ consecutive low days  →  HIGH alert 🔴
+IF avg mood < 2.8 OR (stress > 8 AND sleep < 4) →  MEDIUM alert 🟡
+IF avg mood < 3.2                               →  LOW (no alert) 🟢
+      ↓
+Alert saved to MongoDB alerts collection anonymously
+(token ID + department + severity only — never student name)
+```
+
+### 🏥 Counsellor Flow
+```
+1. Visit /login → Enter email + password → Redirected to /dashboard
+2. View real-time stats → total check-ins, at-risk count, avg campus mood
+3. See 14-day mood trend chart with crisis threshold line
+4. See 🚨 Active Alerts panel → HIGH and MEDIUM risk students
+5. Click "Send Message" on alert → type anonymous support message → send
+6. Student sees message on /resources page using their token
+7. Go to /analytics → view department breakdown, stress heatmap, AI insights
+8. Click Logout → redirected back to /login
+```
+
+### 🏫 Admin Flow
+```
+1. Visit /analytics
+2. View campus-wide wellness data:
+   - Weekly check-in count + trends
+   - Overall mood score
+   - High risk alert count
+   - Mood by department bar chart
+   - Weekly stress heatmap
+   - Mood vs attendance correlation
+   - AI-generated insights with action buttons
+```
+
+### 📊 Data Flow
+```
+[Student Browser]
+      |
+      | POST /api/checkin
+      | { tokenId, mood, sleep, stress, note, department }
+      ↓
+[Render Backend - Node.js + Express]
+      |
+      | Save to DB + Run Risk Detection
+      ↓
+[MongoDB Atlas]
+      |              |
+ checkins        alerts
+ collection      collection
+      |              |
+      |              | GET /api/dashboard
+      |              ↓
+      |     [Counsellor Dashboard]
+      |     Shows alerts, stats, charts
+      |
+      | GET /api/checkin/history/:tokenId
+      ↓
+[Student Mood History on /resources]
+```
+
+### 🔒 Privacy Flow
+```
+Student → Generates random token (MP-XXXX-X)
+               ↓
+         Submits check-ins under token only
+         No name, email, or identity stored
+               ↓
+         AI detects risk pattern
+               ↓
+         Counsellor sees:
+         Token ID + Department + Severity
+         ❌ NEVER sees student name
+         ❌ NEVER sees student identity
+               ↓
+         Even if database is breached:
+         Zero personally identifiable information exposed
+```
 
 ---
 
@@ -93,33 +194,42 @@ MindPulse is a **daily anonymous mood check-in platform** that uses AI-driven pa
 ```
 MindPulse/
 │
-├── frontend/                      # Next.js frontend
+├── frontend/                        # Next.js frontend
 │   ├── app/
-│   │   ├── page.tsx               # Student check-in page
+│   │   ├── page.tsx                 # Student check-in page
+│   │   ├── login/
+│   │   │   └── page.tsx             # Counsellor login page
 │   │   ├── dashboard/
-│   │   │   ├── page.tsx           # Counsellor dashboard
-│   │   │   └── layout.tsx         # Dashboard layout with sidebar
+│   │   │   ├── page.tsx             # Counsellor dashboard
+│   │   │   ├── layout.tsx           # Dashboard layout with sidebar
+│   │   │   ├── alerts/
+│   │   │   │   └── page.tsx         # Active alerts page
+│   │   │   ├── messages/
+│   │   │   │   └── page.tsx         # Messages page
+│   │   │   └── settings/
+│   │   │       └── page.tsx         # Settings page
 │   │   ├── analytics/
-│   │   │   └── page.tsx           # Admin analytics page
+│   │   │   └── page.tsx             # Admin analytics page
 │   │   ├── resources/
-│   │   │   └── page.tsx           # Self-help resources
+│   │   │   └── page.tsx             # Self-help resources + mood history
 │   │   └── about/
-│   │       └── page.tsx           # About page
+│   │       └── page.tsx             # About page
 │   ├── components/
-│   │   ├── check-in-card.tsx      # Main check-in form component
-│   │   ├── navbar.tsx             # Top navigation bar
-│   │   ├── dashboard-sidebar.tsx  # Counsellor sidebar
-│   │   └── animated-background.tsx # Floating blob animations
+│   │   ├── check-in-card.tsx        # Main check-in form component
+│   │   ├── mood-history.tsx         # Token-based mood history viewer
+│   │   ├── navbar.tsx               # Top navigation bar
+│   │   ├── dashboard-sidebar.tsx    # Counsellor sidebar with logout
+│   │   └── animated-background.tsx  # Floating blob animations
 │   └── package.json
 │
-└── backend/                       # Node.js backend
-    ├── server.js                  # Express server entry point
+└── backend/                         # Node.js backend
+    ├── server.js                    # Express server entry point
     ├── models/
-    │   ├── Checkin.js             # Mood check-in schema
-    │   └── Alert.js               # At-risk alert schema
+    │   ├── Checkin.js               # Mood check-in schema
+    │   └── Alert.js                 # At-risk alert schema
     ├── routes/
-    │   ├── checkin.js             # Check-in API routes
-    │   └── dashboard.js           # Dashboard & analytics routes
+    │   ├── checkin.js               # Check-in + history API routes
+    │   └── dashboard.js             # Dashboard, alerts, analytics routes
     └── package.json
 ```
 
@@ -249,19 +359,23 @@ MindPulse is built privacy-first:
 ## 📸 Screenshots
 
 ### Student Check-in Page
-> Anonymous token generation + mood check-in form
+> Anonymous token generation + mood check-in form  
 > Live: [https://mind-pulse-iota.vercel.app](https://mind-pulse-iota.vercel.app)
 
+### Counsellor Login
+> Secure login portal for counsellors and admins  
+> Live: [https://mind-pulse-iota.vercel.app/login](https://mind-pulse-iota.vercel.app/login)
+
 ### Counsellor Dashboard
-> Real-time mood trends + active alerts + send message
+> Real-time mood trends + active alerts + send message  
 > Live: [https://mind-pulse-iota.vercel.app/dashboard](https://mind-pulse-iota.vercel.app/dashboard)
 
 ### Admin Analytics
-> Department mood breakdown + stress heatmap + AI insights
+> Department mood breakdown + stress heatmap + AI insights  
 > Live: [https://mind-pulse-iota.vercel.app/analytics](https://mind-pulse-iota.vercel.app/analytics)
 
-### Self-Help Resources
-> Curated tools for instant relief, peer support, academic stress
+### Self-Help Resources + Mood History
+> Curated tools + token-based personal mood history viewer  
 > Live: [https://mind-pulse-iota.vercel.app/resources](https://mind-pulse-iota.vercel.app/resources)
 
 ---
